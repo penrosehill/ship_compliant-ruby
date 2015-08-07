@@ -6,7 +6,7 @@ module ShipCompliant
   #
   # It provides methods to access nested objects and easily iterate over taxes
   # rates for shipments.
-  # 
+  #
   #   compliant_status = ShipCompliant::CheckCompliance.of_sales_order({
   #     # attributes here
   #   })
@@ -30,8 +30,13 @@ module ShipCompliant
     def taxes_for_shipment(shipment_key)
       shipment = shipment_sales_tax_rates.select { |s| s[:@shipment_key] == shipment_key }.first
 
-      # convert attribute keys to symbols
-      freight = attributes_to_symbols(shipment[:freight_sales_tax_rate])
+      # Some states don't tax freight
+      if shipment[:freight_sales_tax_rate].nil?
+        freight = { sales_tax_due: 0, sales_tax_rate: 0 }
+      else
+        # convert attribute keys to symbols
+        freight = attributes_to_symbols(shipment[:freight_sales_tax_rate])
+      end
 
       # wrap products in ProductSalesTaxRate
       products = wrap_products(shipment[:product_sales_tax_rates])
@@ -75,7 +80,7 @@ module ShipCompliant
     end
 
     private
-    
+
     # Nori returns XML attributes as a key beginning with a spiral (@).
     # This removes the spiral and changes key to a symbol.
     def attributes_to_symbols(object)
