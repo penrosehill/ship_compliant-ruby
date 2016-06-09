@@ -30,6 +30,9 @@ module ShipCompliant
     def taxes_for_shipment(shipment_key)
       shipment = shipment_sales_tax_rates.select { |s| s[:@shipment_key] == shipment_key }.first
 
+      # Shipment not found
+      return nil if shipment.nil?
+
       # Some states don't tax freight
       if shipment[:freight_sales_tax_rate].nil?
         freight = { sales_tax_due: 0, sales_tax_rate: 0 }
